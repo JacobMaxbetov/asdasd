@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Урок — КодЛенд</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Arial Rounded MT Bold', system-ui, sans-serif;
+    }
+    .code-block {
+      font-family: 'Consolas', 'Courier New', monospace;
+      background: #1e2937;
+      color: #e0f2fe;
+    }
+    .duo-green { background-color: #58cc02; }
+  </style>
+</head>
+<body class="bg-[#f0f4f8] min-h-screen">
+
+  <!-- Top Navigation -->
+  <div class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div onclick="goBack()" class="flex items-center gap-2 text-gray-600 hover:text-gray-800 cursor-pointer">
+        <span class="text-3xl">←</span>
+        <span class="font-medium">Назад</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="text-2xl">🚀</div>
+        <h1 class="text-2xl font-bold text-[#58cc02]">КодЛенд</h1>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">👾</span>
+          <div>
+            <div class="text-xs text-gray-500">Уровень</div>
+            <div id="level" class="font-bold">5</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1 bg-yellow-100 px-4 py-2 rounded-3xl">
+          <span class="text-yellow-500">✨</span>
+          <span id="xp" class="font-bold">1240</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-6 py-10">
+
+    <!-- Заголовок урока -->
+    <div id="lesson-header" class="mb-10">
+      <div id="lesson-type" class="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-widest mb-3"></div>
+      <h1 id="lesson-title" class="text-4xl font-bold text-gray-800 mb-4"></h1>
+      <p id="lesson-description" class="text-xl text-gray-600"></p>
+    </div>
+
+    <!-- Основной контент урока -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+      <!-- Левая колонка - Теория -->
+      <div class="lg:col-span-3 space-y-8">
+        <div id="theory-content" class="bg-white rounded-3xl p-8 shadow">
+          <!-- Теория будет вставлена через JS -->
+        </div>
+
+        <!-- Пример кода -->
+        <div class="bg-white rounded-3xl overflow-hidden shadow">
+          <div class="bg-gray-800 text-white px-6 py-3 flex items-center gap-3">
+            <i class="fas fa-code"></i>
+            <span class="font-medium">Пример кода</span>
+          </div>
+          <pre id="code-example" class="code-block p-8 text-sm overflow-auto leading-relaxed"></pre>
+        </div>
+      </div>
+
+      <!-- Правая колонка - Действия -->
+      <div class="lg:col-span-2 space-y-6">
+        <div onclick="startPractice()" 
+             class="bg-[#58cc02] hover:bg-[#46a302] text-white text-2xl font-bold py-8 rounded-3xl text-center shadow-xl cursor-pointer active:scale-95 transition flex items-center justify-center gap-3">
+          <span>💻 Практика</span>
+        </div>
+
+        <div onclick="startQuiz()" 
+             class="bg-white hover:bg-gray-50 border-2 border-[#58cc02] text-[#58cc02] text-2xl font-bold py-8 rounded-3xl text-center shadow cursor-pointer active:scale-95 transition">
+          Пройти тест
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow">
+          <h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+            <span>🏆</span> Награда за урок
+          </h3>
+          <div id="reward" class="flex items-center gap-4 text-3xl"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Кнопка завершения урока -->
+    <div onclick="completeLesson()" 
+         class="mt-12 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-2xl font-bold py-6 rounded-3xl text-center shadow-xl cursor-pointer hover:from-purple-700 hover:to-indigo-700 active:scale-95 transition">
+      ✅ Завершить урок и получить награду
+    </div>
+  </div>
+
+  <script>
+    let currentLesson = null;
+    const lessonId = new URLSearchParams(window.location.search).get('id');
+
+    async function loadLesson() {
+      if (!lessonId) {
+        alert("Урок не найден!");
+        window.location.href = "dashboard.html";
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/lessons`);
+        const allLessons = await res.json();
+        
+        currentLesson = allLessons.find(l => l.id === lessonId);
+
+        if (!currentLesson) {
+          alert("Урок не найден");
+          window.location.href = "dashboard.html";
+          return;
+        }
+
+        // Заполняем данные
+        document.getElementById('lesson-title').textContent = currentLesson.title;
+        document.getElementById('lesson-description').textContent = currentLesson.description;
+        
+        const typeEl = document.getElementById('lesson-type');
+        typeEl.innerHTML = currentLesson.type === 'practice' 
+          ? `<span class="text-blue-600">Практика 💻</span>` 
+          : `<span class="text-emerald-600">Теория 📖</span>`;
+
+        document.getElementById('reward').innerHTML = `
+          <span class="text-yellow-500">✨</span>
+          <span class="font-bold text-[#58cc02]">+${currentLesson.xpReward || 100} XP</span>
+        `;
+
+        // Теория (можно расширять)
+        document.getElementById('theory-content').innerHTML = `
+          <h3 class="text-2xl font-bold mb-6">Что мы сегодня узнаем?</h3>
+          <div class="prose text-lg leading-relaxed text-gray-700">
+            ${currentLesson.content || 'В этом уроке мы разберём основы. Следи за объяснениями и пробуй писать код!'}
+          </div>
+        `;
+
+        // Кодовый пример
+        const codeBlock = document.getElementById('code-example');
+        codeBlock.textContent = currentLesson.codeExample || 
+`let name = "Маша";
+let age = 11;
+
+console.log("Привет, меня зовут " + name);
+console.log("Мне " + age + " лет");`;
+
+      } catch (err) {
+        console.error(err);
+        alert("Ошибка загрузки урока. Убедись, что сервер запущен.");
+      }
+    }
+
+    function startPractice() {
+      alert("Открываем интерактивный редактор кода...\n\n(В следующей версии здесь будет Monaco Editor или простой playground)");
+      // Здесь в будущем будет полноценный редактор кода
+    }
+
+    function startQuiz() {
+      alert("Запускаем короткий тест по теме урока! 🧠");
+      // Можно сделать отдельную страницу quiz.html
+    }
+
+    async function completeLesson() {
+      if (!currentLesson) return;
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Сначала войдите в аккаунт!");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:3000/api/progress/complete-lesson', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ lessonId: currentLesson.id })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert(`🎉 Урок завершён!\n\nПолучено +${currentLesson.xpReward || 100} XP\nТекущий уровень: ${data.user?.level || '—'}`);
+          window.location.href = "dashboard.html";
+        } else {
+          alert(data.message || "Не удалось завершить урок");
+        }
+      } catch (err) {
+        alert("Ошибка соединения с сервером");
+      }
+    }
+
+    function goBack() {
+      window.location.href = "dashboard.html";
+    }
+
+    // Запуск при загрузке страницы
+    window.onload = loadLesson;
+  </script>
+</body>
+</html>

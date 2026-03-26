@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>КодЛенд — Главная</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Arial Rounded MT Bold', 'Comic Sans MS', system-ui, sans-serif;
+    }
+    .duo-green { background-color: #58cc02; }
+    .xp-bar {
+      height: 12px;
+      background: linear-gradient(to right, #58cc02, #a3e635);
+      border-radius: 9999px;
+    }
+    .lesson-card {
+      transition: all 0.3s ease;
+    }
+    .lesson-card:hover {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+    }
+    .streak-flame {
+      animation: flame 1.5s infinite alternate;
+    }
+    @keyframes flame {
+      from { transform: scale(1); }
+      to { transform: scale(1.15); }
+    }
+  </style>
+</head>
+<body class="bg-[#f8f9fa] min-h-screen pb-20">
+
+  <!-- Top Bar (как в Duolingo) -->
+  <div class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div onclick="window.location.href='index.html'" 
+             class="w-12 h-12 bg-yellow-400 rounded-2xl flex items-center justify-center text-4xl cursor-pointer hover:scale-110 transition">
+          🚀
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-[#58cc02]">КодЛенд</h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-8 text-lg">
+        <div class="flex items-center gap-2 font-bold">
+          <span class="text-orange-500 text-2xl">🔥</span>
+          <span id="streak" class="text-2xl">7</span>
+        </div>
+        
+        <div class="flex items-center gap-3">
+          <div class="text-2xl">👾</div>
+          <div>
+            <div class="text-sm text-gray-500">Уровень</div>
+            <div id="level" class="font-bold text-2xl text-purple-600">5</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 bg-yellow-100 px-5 py-2 rounded-3xl">
+          <span class="text-yellow-500 text-2xl">✨</span>
+          <span id="xp" class="font-bold text-xl">1240</span>
+          <span class="text-gray-500 text-sm">XP</span>
+        </div>
+
+        <div onclick="logout()" class="w-10 h-10 bg-gray-200 rounded-2xl flex items-center justify-center text-2xl cursor-pointer hover:bg-red-100">
+          👤
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-5xl mx-auto px-6 pt-8">
+
+    <!-- Приветствие + Duo-style персонаж -->
+    <div class="flex items-center gap-6 mb-10">
+      <div class="text-7xl">👾</div>
+      <div>
+        <h2 class="text-4xl font-bold text-gray-800">Привет, <span id="username" class="text-[#58cc02]">КосмоКот</span>!</h2>
+        <p class="text-2xl text-gray-600">Давай сегодня поучимся кодить! 🚀</p>
+      </div>
+    </div>
+
+    <!-- XP Progress -->
+    <div class="bg-white rounded-3xl p-8 shadow mb-10">
+      <div class="flex justify-between items-center mb-3">
+        <div class="font-bold text-xl">Прогресс до уровня <span id="next-level">6</span></div>
+        <div class="text-gray-500">1240 / 1500 XP</div>
+      </div>
+      <div class="bg-gray-200 rounded-full overflow-hidden">
+        <div id="xp-progress" class="xp-bar w-[82%]"></div>
+      </div>
+    </div>
+
+    <!-- Кнопка "Продолжить урок" (самая большая, как в Duolingo) -->
+    <div onclick="startLesson()" 
+         class="bg-[#58cc02] hover:bg-[#46a302] text-white text-3xl font-bold py-8 rounded-3xl text-center shadow-xl cursor-pointer mb-12 flex items-center justify-center gap-4 active:scale-95 transition">
+      <span>Продолжить обучение</span>
+      <span class="text-5xl">→</span>
+    </div>
+
+    <!-- Секция уроков -->
+    <h3 class="text-2xl font-bold mb-6 flex items-center gap-3">
+      <span>📚</span>
+      <span>Сегодняшние уроки</span>
+    </h3>
+
+    <div id="lessons-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Уроки будут загружаться через JavaScript -->
+    </div>
+
+  </div>
+
+  <!-- Нижняя навигация (Duolingo style) -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3">
+    <div class="max-w-5xl mx-auto px-6 flex justify-around text-3xl">
+      <div class="text-[#58cc02] cursor-pointer">🏠</div>
+      <div onclick="window.location.href='lessons.html'" class="cursor-pointer text-gray-400 hover:text-gray-600">📖</div>
+      <div onclick="window.location.href='#'" class="cursor-pointer text-gray-400 hover:text-gray-600">🏆</div>
+      <div onclick="window.location.href='#'" class="cursor-pointer text-gray-400 hover:text-gray-600">👥</div>
+    </div>
+  </div>
+
+  <script>
+    // Загрузка данных пользователя из localStorage
+    function loadUserData() {
+      const user = JSON.parse(localStorage.getItem('user')) || {};
+      const token = localStorage.getItem('token');
+
+      document.getElementById('username').textContent = user.username || "Друг";
+      document.getElementById('level').textContent = user.level || 1;
+      document.getElementById('xp').textContent = user.xp || 1240;
+    }
+
+    // Загрузка уроков с бэкенда
+    async function loadLessons() {
+      try {
+        const res = await fetch('http://localhost:3000/api/lessons');
+        const lessons = await res.json();
+
+        const container = document.getElementById('lessons-container');
+        container.innerHTML = '';
+
+        lessons.slice(0, 6).forEach(lesson => {
+          const isCompleted = false; // можно проверять из прогресса пользователя
+
+          const card = document.createElement('div');
+          card.className = `lesson-card bg-white rounded-3xl p-6 shadow cursor-pointer ${isCompleted ? 'opacity-75' : ''}`;
+          card.innerHTML = `
+            <div class="flex justify-between items-start mb-4">
+              <div class="text-5xl">${lesson.type === 'practice' ? '💻' : '📖'}</div>
+              ${isCompleted ? '<div class="text-green-500 text-3xl">✅</div>' : ''}
+            </div>
+            <h4 class="font-bold text-xl mb-2">${lesson.title}</h4>
+            <p class="text-gray-600 text-sm line-clamp-2">${lesson.description}</p>
+            <div class="mt-6 flex items-center justify-between">
+              <div class="text-[#58cc02] font-bold">+${lesson.xpReward || 100} XP</div>
+              <div class="bg-gray-100 text-gray-600 text-xs px-4 py-1 rounded-2xl">Уровень ${lesson.level}</div>
+            </div>
+          `;
+          card.onclick = () => startLesson(lesson.id);
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Не удалось загрузить уроки", err);
+      }
+    }
+
+    function startLesson(lessonId = null) {
+      card.onclick = () => {
+        window.location.href = `lesson.html?id=${lesson.id}`;
+      };
+    }
+
+    function logout() {
+      if (confirm("Выйти из аккаунта?")) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+      }
+    }
+
+    // Инициализация
+    window.onload = () => {
+      loadUserData();
+      loadLessons();
+    };
+  </script>
+</body>
+</html>
